@@ -28,8 +28,10 @@ def login_user(request):
     serializer = UserLoginSerializer(data=request.data)
     if serializer.is_valid():
         user = serializer.validated_data["user"]
+
         # Generate JWT tokens for the user
         refresh = RefreshToken.for_user(user)
+        
         return Response({
             "refresh": str(refresh), # Probably wont be used for this project
             "access": str(refresh.access_token), 
