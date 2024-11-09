@@ -40,6 +40,13 @@ INSTALLED_APPS = [
     'isaprojekat'
 ]
 
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ),
+}
+
+
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -80,7 +87,7 @@ DATABASES = {
         'NAME': 'ISA',      # Database name
         'USER': 'postgres',           # Database user
         'PASSWORD': 'postgres',   # Database password
-        'HOST': 'localhost',        # Or IP address if not local
+        'HOST': 'localhost',        
         'PORT': '5432',             # Default PostgreSQL port
     }
 }
