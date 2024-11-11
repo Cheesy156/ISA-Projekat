@@ -1,23 +1,24 @@
 from django.db import models
 import base64
 from django.utils import timezone
+from django.contrib.auth.models import AbstractUser
 
-class MyUser(models.Model):
+
+class MyUser(AbstractUser):
     ROLE_CHOICES = (
         ('user', 'Regular User'),
         ('admin', 'Administrator'),
     )
 
-    username = models.CharField(max_length=150, unique=True)
-    password = models.CharField(max_length=128)
-    email = models.EmailField(unique=True)
+    # Add custom fields
     role = models.CharField(max_length=5, choices=ROLE_CHOICES, default='user')
-    first_name = models.CharField(max_length=30)
-    last_name = models.CharField(max_length=30)
     address = models.CharField(max_length=255, blank=True, null=True)
     city = models.CharField(max_length=100, blank=True, null=True)
     country = models.CharField(max_length=100, blank=True, null=True)
     profile_pic_base64 = models.TextField(blank=True, null=True)
+
+    # The required fields for creating a user (excluding 'username')
+    REQUIRED_FIELDS = ['email', 'first_name', 'last_name']
 
     def set_profile_pic(self, image_path):
         """

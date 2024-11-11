@@ -24,11 +24,15 @@ const Login = () => {
                 password: password,
             });
 
-            if (response.data.access) {
+            if (response.data) {
                 // Store the access token in localStorage
-                localStorage.setItem('access_token', response.data.access);
+                // Save the tokens to localStorage
+                console.log(response.data);
+                console.log(response.data.access);
+                localStorage.setItem('authToken', response.data.access);
+                localStorage.setItem('refreshToken', response.data.refresh);
                 toast.success(response.data.message || "Login successful!");
-                navigate("/dashboard"); // Redirect to a dashboard or home page after login
+                //navigate("/dashboard"); // Redirect to a dashboard or home page after login
             } else {
                 toast.error("Login failed. Please try again.");
             }

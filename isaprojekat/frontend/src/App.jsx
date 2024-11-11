@@ -4,7 +4,7 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import CreatePost from './pages/CreatePost';
 function App() {
-  const isLoggedIn = localStorage.getItem('access_token');
+  const isLoggedIn = localStorage.getItem('authToken');
   return (
     <div className="App">
       <BrowserRouter>

@@ -108,7 +108,7 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'isaprojekat.wsgi.application'
 
-
+AUTH_USER_MODEL = 'isaprojekat.MyUser'
 # Database
 # https://docs.djangoproject.com/en/4.1/ref/settings/#databases
 

@@ -15,13 +15,15 @@ from django.conf import settings
 from django.db import transaction, IntegrityError
 from django.views.decorators.csrf import csrf_exempt
 
-@api_view(['POST'])
-def register_user(request):
 
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def register_user(request):
     time.sleep(2)
 
     with transaction.atomic():
         serializer = UserRegistrationSerializer(data=request.data)
+        
         if serializer.is_valid():
             try:
                 serializer.save()
@@ -83,7 +85,7 @@ def create_post(request):
         data['user'] = user_id 
 
         serializer = PostSerializer(data=data)
-
+        print(data)
         if serializer.is_valid():
             # Save the post data
             post = serializer.save()

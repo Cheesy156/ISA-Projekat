@@ -21,7 +21,7 @@ const loginUser = async (username, password, host) => {
 };
 
 const checkLoggedIn = (navigate) => {
-    const isLoggedIn = localStorage.getItem('access_token');
+    const isLoggedIn = localStorage.getItem('authToken');
     if (isLoggedIn) {
         navigate('/home');
     }

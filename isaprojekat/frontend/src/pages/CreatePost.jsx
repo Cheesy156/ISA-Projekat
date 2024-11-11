@@ -8,7 +8,7 @@ import 'leaflet/dist/leaflet.css';
 
 
 const CreatePost = () => {
-    const [description, setDescription] = useState('');
+    const [text, setText] = useState('');
     const [latitude, setLatitude] = useState(null);
     const [longitude, setLongitude] = useState(null);
     const [image, setImage] = useState(null);
@@ -39,19 +39,19 @@ const CreatePost = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        if (!description | !latitude | !longitude) {
+        if (!text | !latitude | !longitude) {
             toast.error('Please complete all fields.');
             return;
         }
     
-        const token = localStorage.getItem('access_token')
+        const token = localStorage.getItem('authToken')
         console.log(token);
-        const decodedToken = JSON.parse(atob(localStorage.getItem('access_token').split('.')[1]));
+        const decodedToken = JSON.parse(atob(localStorage.getItem('authToken').split('.')[1]));
         console.log(decodedToken);
         axios.post(
             'http://127.0.0.1:8000/api/create_post/',
             {
-                description,
+                text,
                 latitude,
                 longitude,
                 image,
@@ -78,8 +78,8 @@ const CreatePost = () => {
                 <div className="form-group">
                     <label>Description</label>
                     <textarea
-                        value={description}
-                        onChange={(e) => setDescription(e.target.value)}
+                        value={text}
+                        onChange={(e) => setText(e.target.value)}
                         placeholder="Enter a description for your post"
                         required
                     />
