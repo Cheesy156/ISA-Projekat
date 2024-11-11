@@ -3,6 +3,7 @@ import { BrowserRouter, Route, Routes, Navigate } from 'react-router-dom';
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import CreatePost from './pages/CreatePost';
+import PostPages from './pages/PostPages';
 function App() {
   const isLoggedIn = localStorage.getItem('authToken');
   return (
@@ -12,6 +13,7 @@ function App() {
               <Route path='/' element={isLoggedIn ? <Navigate to="/home" /> : <Login/>} />
               <Route path='/register' element={isLoggedIn ? <Navigate to="/home" /> : <Register/>}  />
               <Route path='/createpost' element={!isLoggedIn ? <Navigate to="/" /> : <CreatePost/>} />
+              <Route path='/posts' element ={ <PostPages/> }/>
           </Routes>
       </BrowserRouter>
     </div>

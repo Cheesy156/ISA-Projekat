@@ -93,10 +93,11 @@ class PostSerializer(serializers.ModelSerializer):
 class CommentSerializer(serializers.ModelSerializer):
     subcomments = serializers.SerializerMethodField()
     likes_count = serializers.SerializerMethodField()
-    
+    username = serializers.SerializerMethodField()
+
     class Meta:
         model = Comment
-        fields = ['id', 'text', 'post', 'user', 'parent_comment', 'subcomments', 'likes_count']
+        fields = ['id', 'text', 'post', 'user', 'parent_comment', 'likes_count', 'username', 'subcomments']
 
     def get_subcomments(self, obj):
         # Get sub-comments if there are any
@@ -107,16 +108,21 @@ class CommentSerializer(serializers.ModelSerializer):
         # Get the number of likes for the comment
         return LikeComment.objects.filter(comment=obj).count()
 
+    def get_username(self, obj):
+        # Retrieve the username from the user field of the post
+        return obj.user.username if obj.user else None
+
     def create(self, validated_data):
         return Comment.objects.create(**validated_data)
 
 class PostCommentSerializer(serializers.ModelSerializer):
     comments = serializers.SerializerMethodField()
     likes_count = serializers.SerializerMethodField()
+    username = serializers.SerializerMethodField()
 
     class Meta:
         model = Post
-        fields = ['id', 'text', 'latitude', 'longitude', 'time_posted', 'picture', 'user_id', 'comments', 'likes_count']
+        fields = ['id', 'text', 'latitude', 'longitude', 'time_posted', 'picture', 'user_id', 'likes_count', 'username', 'comments']
 
     def get_comments(self, obj):
         # Get only top-level comments for the post
@@ -126,3 +132,7 @@ class PostCommentSerializer(serializers.ModelSerializer):
     def get_likes_count(self, obj):
         # Get the number of likes for the post
         return LikePost.objects.filter(post=obj).count()
+    
+    def get_username(self, obj):
+        # Get the username from the User model based on user_id
+        return MyUser.objects.get(id=obj.user_id).username
