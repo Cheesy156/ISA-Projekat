@@ -15,12 +15,13 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
-from .views import register_user, login_user, create_post, CreatePost, LoginView
+from .views import register_user, create_post, LoginView,get_posts_with_comments, create_comment
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/register/', register_user, name='register_user'),
     path('api/login/', LoginView.as_view(), name='login'),
     path('api/create_post/', create_post, name='create_post'),
-    path('create_post/', CreatePost.as_view(), name='create_post'),
+    path('api/posts/', get_posts_with_comments, name='get_posts_with_comments'),
+    path('api/posts/comments', create_comment, name='create_comment'),
 ]

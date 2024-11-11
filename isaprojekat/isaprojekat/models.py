@@ -40,7 +40,7 @@ class Post(models.Model):
     user = models.ForeignKey(MyUser, on_delete=models.CASCADE, related_name="posts")
 
     def __str__(self):
-        return self.title
+        return self.text
 
 class Comment(models.Model):
     text = models.TextField()

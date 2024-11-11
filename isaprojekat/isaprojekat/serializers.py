@@ -88,19 +88,41 @@ class PostSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("Invalid image data.")
         return value
     '''
+
+
 class CommentSerializer(serializers.ModelSerializer):
+    subcomments = serializers.SerializerMethodField()
+    likes_count = serializers.SerializerMethodField()
+    
     class Meta:
         model = Comment
-        fields = ['id', 'text', 'post', 'user', 'parent_comment']
+        fields = ['id', 'text', 'post', 'user', 'parent_comment', 'subcomments', 'likes_count']
 
+    def get_subcomments(self, obj):
+        # Get sub-comments if there are any
+        subcomments = Comment.objects.filter(parent_comment=obj)
+        return CommentSerializer(subcomments, many=True, context=self.context).data
+    
+    def get_likes_count(self, obj):
+        # Get the number of likes for the comment
+        return LikeComment.objects.filter(comment=obj).count()
 
-class LikePostSerializer(serializers.ModelSerializer):
+    def create(self, validated_data):
+        return Comment.objects.create(**validated_data)
+
+class PostCommentSerializer(serializers.ModelSerializer):
+    comments = serializers.SerializerMethodField()
+    likes_count = serializers.SerializerMethodField()
+
     class Meta:
-        model = LikePost
-        fields = ['id', 'userId', 'postId']
+        model = Post
+        fields = ['id', 'text', 'latitude', 'longitude', 'time_posted', 'picture', 'user_id', 'comments', 'likes_count']
 
-
-class LikeCommentSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = LikeComment
-        fields = ['id', 'user', 'comment']
+    def get_comments(self, obj):
+        # Get only top-level comments for the post
+        top_level_comments = Comment.objects.filter(post=obj, parent_comment__isnull=True)
+        return CommentSerializer(top_level_comments, many=True, context=self.context).data
+    
+    def get_likes_count(self, obj):
+        # Get the number of likes for the post
+        return LikePost.objects.filter(post=obj).count()
