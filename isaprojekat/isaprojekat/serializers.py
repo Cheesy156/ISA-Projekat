@@ -1,14 +1,15 @@
 from rest_framework import serializers
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth.hashers import check_password
-from .models import User  
+from .models import MyUser, Post, Comment, LikePost, LikeComment
 import uuid
+import base64
 
 class UserRegistrationSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
 
     class Meta:
-        model = User
+        model = MyUser
         fields = [
             'username', 'email', 'password', 
             'first_name', 'last_name', 'address', 'city', 
@@ -16,12 +17,10 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
         ]
 
     def validate(self, data):
-        errors = {}
-
         # Check if email and username are unique
-        if User.objects.filter(email=data['email']).exists():
+        if MyUser.objects.filter(email=data['email']).exists():
             raise serializers.ValidationError("Email is already in use.")
-        if User.objects.filter(username=data['username']).exists():
+        if MyUser.objects.filter(username=data['username']).exists():
             raise serializers.ValidationError("Username is already in use.")
         
         return data
@@ -33,7 +32,7 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
         hashed_password = make_password(validated_data['password'], salt=salt)
         validated_data['password'] = hashed_password
         
-        user = User(
+        user = MyUser(
             username=validated_data['username'],
             email=validated_data['email'],
             first_name=validated_data['first_name'],
@@ -59,13 +58,13 @@ class UserLoginSerializer(serializers.Serializer):
         # Check if the input is an email
         if "@" in username_or_email and "." in username_or_email:
             try:
-                user = User.objects.get(email=username_or_email)
-            except User.DoesNotExist:
+                user = MyUser.objects.get(email=username_or_email)
+            except MyUser.DoesNotExist:
                 raise serializers.ValidationError("Invalid email or password.")
         else:
             try:
-                user = User.objects.get(username=username_or_email)
-            except User.DoesNotExist:
+                user = MyUser.objects.get(username=username_or_email)
+            except MyUser.DoesNotExist:
                 raise serializers.ValidationError("Invalid username or password.")
 
         # Check if the password matches
@@ -73,4 +72,35 @@ class UserLoginSerializer(serializers.Serializer):
             raise serializers.ValidationError("Invalid password.")
         
         data["user"] = user
+
         return data
+    
+class PostSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Post
+        fields = ['id', 'text', 'latitude', 'longitude', 'time_posted', 'picture', 'user']
+    '''
+    # Validate if base64 can be decoded
+    def validate_picture_base64(self, value):
+        try:
+            base64.b64decode(value)
+        except Exception:
+            raise serializers.ValidationError("Invalid image data.")
+        return value
+    '''
+class CommentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Comment
+        fields = ['id', 'text', 'post', 'user', 'parent_comment']
+
+
+class LikePostSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = LikePost
+        fields = ['id', 'userId', 'postId']
+
+
+class LikeCommentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = LikeComment
+        fields = ['id', 'user', 'comment']

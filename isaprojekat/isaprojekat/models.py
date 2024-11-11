@@ -1,7 +1,8 @@
 from django.db import models
 import base64
+from django.utils import timezone
 
-class User(models.Model):
+class MyUser(models.Model):
     ROLE_CHOICES = (
         ('user', 'Regular User'),
         ('admin', 'Administrator'),
@@ -30,43 +31,45 @@ class User(models.Model):
         return f"{self.username} ({self.get_role_display()})"
 
 class Post(models.Model):
-    title = models.CharField(max_length=200)
     text = models.TextField()
+    latitude = models.DecimalField(max_digits=24, decimal_places=20, blank=True, null=True)  
+    longitude = models.DecimalField(max_digits=24, decimal_places=20, blank=True, null=True) 
+    time_posted = models.DateTimeField(default=timezone.now)  # Auto-filled with current time
     picture = models.TextField(blank=True, null=True)  # Store image as base64 or URL
-    userId = models.ForeignKey(User, on_delete=models.CASCADE, related_name="posts")
+    user = models.ForeignKey(MyUser, on_delete=models.CASCADE, related_name="posts")
 
     def __str__(self):
         return self.title
 
 class Comment(models.Model):
     text = models.TextField()
-    postId = models.ForeignKey(Post, on_delete=models.CASCADE, related_name="comments")
-    userId = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name="comments")
-    commentId = models.ForeignKey('self', on_delete=models.CASCADE, blank=True, null=True, related_name="replies")  # Self-referencing field for nested comments
+    post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name="comments")
+    user = models.ForeignKey(MyUser, on_delete=models.SET_NULL, null=True, blank=True, related_name="comments")
+    parent_comment = models.ForeignKey('self', on_delete=models.CASCADE, blank=True, null=True, related_name="replies")  # Self-referencing field for nested comments
 
     def __str__(self):
-        return f"Comment by {self.userId} on {self.postId}"
+        return f"Comment by {self.user} on {self.post}"
 
 class LikePost(models.Model):
-    userId = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name="liked_posts")
-    postId = models.ForeignKey(Post, on_delete=models.CASCADE, related_name="likes")
+    user = models.ForeignKey(MyUser, on_delete=models.SET_NULL, null=True, blank=True, related_name="liked_posts")
+    post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name="likes")
 
     def __str__(self):
-        return f"{self.userId} likes {self.postId}"
+        return f"{self.user} likes {self.post}"
 
 class LikeComment(models.Model):
-    userId = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name="liked_comments")
-    commentId = models.ForeignKey(Comment, on_delete=models.CASCADE, related_name="likes")
+    user = models.ForeignKey(MyUser, on_delete=models.SET_NULL, null=True, blank=True, related_name="liked_comments")
+    comment = models.ForeignKey(Comment, on_delete=models.CASCADE, related_name="likes")
 
     def __str__(self):
-        return f"{self.userId} likes comment {self.commentId}"
+        return f"{self.user} likes comment {self.comment}"
 
 class Followers(models.Model):
     # User that clicks the followbutton on someone
-    FollowerId = models.ForeignKey(User, on_delete=models.CASCADE, related_name="following")
+    Follower = models.ForeignKey(MyUser, on_delete=models.CASCADE, related_name="following")
     # User that gains a follower 
-    FollowedId = models.ForeignKey(User, on_delete=models.CASCADE, related_name="followers")
+    Followed = models.ForeignKey(MyUser, on_delete=models.CASCADE, related_name="followers")
 
     def __str__(self):
-        return f"{self.FollowerId} follows {self.FollowedId}"
+        return f"{self.Follower} follows {self.Followed}"
     
