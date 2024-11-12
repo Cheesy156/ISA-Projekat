@@ -88,8 +88,6 @@ class PostSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("Invalid image data.")
         return value
 
-
-
 class CommentSerializer(serializers.ModelSerializer):
     subcomments = serializers.SerializerMethodField()
     likes_count = serializers.SerializerMethodField()
@@ -136,3 +134,10 @@ class PostCommentSerializer(serializers.ModelSerializer):
     def get_username(self, obj):
         # Get the username from the User model based on user_id
         return MyUser.objects.get(id=obj.user_id).username
+
+class UserProfileSerializer(serializers.ModelSerializer):
+    posts = PostCommentSerializer(many = True, read_only = True)
+
+    class Meta:
+        model = MyUser
+        fields = ['username', 'first_name', 'last_name', 'address', 'city', 'country', 'profile_pic_base64', 'posts']

@@ -1,7 +1,7 @@
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
-from .serializers import UserRegistrationSerializer, UserLoginSerializer, PostSerializer, CommentSerializer, PostCommentSerializer
+from .serializers import UserRegistrationSerializer, UserLoginSerializer, PostSerializer, CommentSerializer, PostCommentSerializer, UserProfileSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated, AllowAny
@@ -180,3 +180,14 @@ def get_posts_with_comments(request):
     posts = Post.objects.all()
     serializer = PostCommentSerializer(posts, many=True)
     return Response(serializer.data)
+
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def user_profile_view(request, username):
+    try:
+        user = MyUser.objects.get(username=username)
+        serializer = UserProfileSerializer(user)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    except MyUser.DoesNotExist:
+        return Response({"error": "User not found"}, status=status.HTTP_404_NOT_FOUND)

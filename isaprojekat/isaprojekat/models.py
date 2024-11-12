@@ -10,14 +10,12 @@ class MyUser(AbstractUser):
         ('admin', 'Administrator'),
     )
 
-    # Add custom fields
     role = models.CharField(max_length=5, choices=ROLE_CHOICES, default='user')
     address = models.CharField(max_length=255, blank=True, null=True)
     city = models.CharField(max_length=100, blank=True, null=True)
     country = models.CharField(max_length=100, blank=True, null=True)
     profile_pic_base64 = models.TextField(blank=True, null=True)
 
-    # The required fields for creating a user (excluding 'username')
     REQUIRED_FIELDS = ['email', 'first_name', 'last_name']
 
     def set_profile_pic(self, image_path):
