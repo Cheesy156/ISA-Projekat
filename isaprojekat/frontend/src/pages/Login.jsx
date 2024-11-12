@@ -10,7 +10,7 @@ import api from '../utils/axiosInstance';
 const Login = () => {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
-
+    const isLoggedIn = localStorage.getItem('authToken');
 
     const navigate = useNavigate();
 
@@ -42,7 +42,10 @@ const Login = () => {
     }
 
     useEffect(() => {
-        checkLoggedIn(navigate);
+        if (isLoggedIn)
+        {
+            navigate('/');
+        }
     }, [navigate]);
 
     return (

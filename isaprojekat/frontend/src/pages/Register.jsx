@@ -18,6 +18,7 @@ const Register = () => {
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
     const [profilePic, setProfilePic] = useState(null);
+    const isLoggedIn = localStorage.getItem('authToken');
 
     const navigate = useNavigate();
 
@@ -80,7 +81,10 @@ const Register = () => {
     };
 
     useEffect(() => {
-        // checkLoggedIn(navigate);
+        if (isLoggedIn) 
+        {
+            navigate('/');
+        }
     }, [navigate]);
 
     return (

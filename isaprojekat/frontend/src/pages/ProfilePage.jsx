@@ -90,6 +90,7 @@ const ProfilePage = () => {
                 <p><strong><Link to={`/profile/${comment.username}`} onClick={closeModal} style={{ textDecoration: 'none', color: 'inherit' }}> {comment.username} </Link></strong></p>
                 <p><em> {comment.text} </em></p>
                 
+                <div className='buttons-container'>
                 <button 
                     className={`like-button ${isLoggedIn ? 'enabled' : 'disabled'}`} 
                     disabled={!isLoggedIn}
@@ -103,7 +104,7 @@ const ProfilePage = () => {
                 >
                     <i className="fas fa-comment"></i> Comment
                 </button>
-
+                </div>
                 {comment.subcomments && comment.subcomments.length > 0 && (
                     <div className="subcomments">
                         {renderComments(comment.subcomments)}

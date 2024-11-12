@@ -13,8 +13,8 @@ function App() {
       <BrowserRouter>
           <Routes>
               <Route path='/' element={isLoggedIn ? <Navigate to="/posts" /> : <Login/>} />
-              <Route path='/register' element={isLoggedIn ? <Navigate to="/" /> : <Register/>}  />
-              <Route path='/createpost' element={!isLoggedIn ? <Navigate to="/" /> : <CreatePost/>} />
+              <Route path='/register' element={<Register/>}  />
+              <Route path='/createpost' element={<CreatePost/>} />
               <Route path='/posts' element ={ <PostPages/> } />
               <Route path='/profile/:username' element={ <ProfilePage/ >} />
           </Routes>

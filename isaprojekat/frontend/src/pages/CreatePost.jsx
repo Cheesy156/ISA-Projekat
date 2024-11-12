@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../utils/axiosInstance';
 import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet';
@@ -14,6 +14,14 @@ const CreatePost = () => {
     const [longitude, setLongitude] = useState(null);
     const [picture, setPicture] = useState(null);
     const navigate = useNavigate();
+    const isLoggedIn = localStorage.getItem('authToken');
+
+    useEffect(() => {
+        if (!isLoggedIn) 
+        {
+            navigate('/');
+        }
+    }, [navigate]);
 
     // Drag and drop image handler
     const onDrop = useCallback((acceptedFiles) => {

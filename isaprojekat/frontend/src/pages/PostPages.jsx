@@ -93,6 +93,9 @@ const PostPages = () => {
         ));
     };
 
+    if (loading) return <p>Loading...</p>;
+    if (!posts) return <p>User not found.</p>;
+
     return (
         <>
         <Nav/>

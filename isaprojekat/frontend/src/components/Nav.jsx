@@ -2,10 +2,12 @@ import { Link } from 'react-router-dom';
 import '../css/nav.css';
 import api from '../utils/axiosInstance';
 import { useNavigate } from "react-router-dom";
+import { useState } from 'react';
 
 const Nav = () => {
     const isLoggedIn = localStorage.getItem('authToken');
-
+    const [username, setUsername] = useState(null);
+                
     const navigate = useNavigate();
 
     const handleLogout = () => {
@@ -16,8 +18,14 @@ const Nav = () => {
 
     const handleProfile = async () => {
         try {
-            const response = await api.get('/get_username');  // Replace with your actual API endpoint
-            const username = response.data.username;
+            api.get('/get_username')
+            .then((response) => {
+                console.log(response.data);
+                setUsername(response.data.username);
+            })
+            .catch((error) => {
+                console.error("Error fetching username:", error);
+            });
 
             if (username) {
                 navigate(`/profile/${username}`);
@@ -28,6 +36,14 @@ const Nav = () => {
             console.error('Error fetching username:', error);
         }
     };
+
+    const handlePosts = () => {
+        navigate('/posts');
+    };
+
+    const createPost = () => {
+        navigate('/createpost')
+    }
 
     return (
         <nav className="navbar">
@@ -41,6 +57,8 @@ const Nav = () => {
                 ) : (
                     <>
                         <button onClick={handleProfile} className="navbar-item profile-btn">Profile</button>
+                        <button onClick={handlePosts} className="navbar-item posts-btn">Posts</button>
+                        <button onClick={createPost} className='navbar-item createposts-btn'>Create Post</button>
                         <button onClick={handleLogout} className="navbar-item logout-btn">Logout</button>
                     </>
                 )}
