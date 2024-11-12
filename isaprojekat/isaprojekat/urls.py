@@ -15,7 +15,7 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
-from .views import register_user, create_post, LoginView,get_posts_with_comments, create_comment, user_profile_view
+from .views import register_user, create_post, LoginView,get_posts_with_comments, create_comment, user_profile_view, check_user_view, get_username_view
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
 urlpatterns = [
@@ -26,5 +26,7 @@ urlpatterns = [
     path('api/posts/', get_posts_with_comments, name='get_posts_with_comments'),
     path('api/posts/comments', create_comment, name='create_comment'),
     path('api/profile/<str:username>/',user_profile_view, name='user_profile'),
-    path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh')
+    path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+    path('api/check_user/<str:username>/', check_user_view, name='check-user'),
+    path('api/get_username/', get_username_view, name='get_username'),
 ]

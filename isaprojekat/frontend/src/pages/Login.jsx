@@ -8,8 +8,6 @@ import Nav from "../components/Nav";
 import api from '../utils/axiosInstance';
 
 const Login = () => {
-    const host = process.env.REACT_APP_HOST;
-
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
 
@@ -27,12 +25,10 @@ const Login = () => {
             if (response.data) {
                 // Store the access token in localStorage
                 // Save the tokens to localStorage
-                console.log(response.data);
-                console.log(response.data.access);
                 localStorage.setItem('authToken', response.data.access);
                 localStorage.setItem('refreshToken', response.data.refresh);
                 toast.success(response.data.message || "Login successful!");
-                //navigate("/dashboard"); // Redirect to a dashboard or home page after login
+                navigate("/posts");
             } else {
                 toast.error("Login failed. Please try again.");
             }

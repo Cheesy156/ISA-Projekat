@@ -7,9 +7,11 @@ import L from 'leaflet';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import { Link } from 'react-router-dom';
 import '../css/post.css';
-
+import Nav from "../components/Nav";
 
 const ProfilePage = () => {
+    const isLoggedIn = localStorage.getItem('authToken');
+    const [isUserAuthor, setIsUserAuthor] = useState(false);
     const [userposts, setUserPosts] = useState([]);
     const [userInfo, setUserInfo] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -46,8 +48,22 @@ const ProfilePage = () => {
             }
         };
 
+        const checkUser = async () => {
+            try {
+                const response = await api.get(`/check_user/${username}/`);
+                setIsUserAuthor(response.status === 200);
+            } catch (error) {
+                console.error("Error checking user:", error);
+                setIsUserAuthor(false);
+            }
+            
+        };
+
         fetchData();
+        checkUser();
     }, [username]);
+
+    
 
     if (loading) return <p>Loading...</p>;
     if (!userInfo) return <p>User not found.</p>;
@@ -72,8 +88,22 @@ const ProfilePage = () => {
         return comments.map((comment) => (
             <div key={comment.id} className="comment">
                 <p><strong><Link to={`/profile/${comment.username}`} onClick={closeModal} style={{ textDecoration: 'none', color: 'inherit' }}> {comment.username} </Link></strong></p>
-                <p><italic> {comment.text} </italic></p>
-                <p><strong>Likes:</strong> {comment.likes_count}</p>
+                <p><em> {comment.text} </em></p>
+                
+                <button 
+                    className={`like-button ${isLoggedIn ? 'enabled' : 'disabled'}`} 
+                    disabled={!isLoggedIn}
+                >
+                    <i className="fas fa-heart"></i> {selectedPost.likes_count}
+                </button>
+
+                <button 
+                    className={`comment-button ${isLoggedIn ? 'enabled' : 'disabled'}`} 
+                    disabled={!isLoggedIn}
+                >
+                    <i className="fas fa-comment"></i> Comment
+                </button>
+
                 {comment.subcomments && comment.subcomments.length > 0 && (
                     <div className="subcomments">
                         {renderComments(comment.subcomments)}
@@ -103,6 +133,8 @@ const ProfilePage = () => {
 
 
     return (
+        <>
+        <Nav/>
         <div className="profile-page">
             <div className="profile-info">
                 <img
@@ -123,7 +155,24 @@ const ProfilePage = () => {
                             <img src={posts.picture} alt="post" className="post-image" />
                             <p>{posts.text}</p>
                             <p><strong>{new Date(posts.time_posted).toLocaleString()}</strong></p>
-                            <button onClick={() => handleShowMore(posts)}>Show More</button>
+                            <div className='buttons-container'>
+                                <button 
+                                        className={`like-button ${isLoggedIn ? 'enabled' : 'disabled'}`} 
+                                        disabled={!isLoggedIn}
+                                    >
+                                        <i className="fas fa-heart"></i> {posts.likes_count}
+                                </button>
+                                
+                                <button 
+                                    className="show-more-button"
+                                    onClick={() => handleShowMore(posts)}
+                                >
+                                    <i className="fas fa-ellipsis-h"></i>
+                                </button>
+                            </div>
+                            {isUserAuthor && <button className="edit/delete-button">Edit/Delete</button>}
+
+                            
                         </div>
                     ))}
 
@@ -161,7 +210,14 @@ const ProfilePage = () => {
                                         </MapContainer>
                                     </div>
 
-                                    <p><strong>Likes:</strong> {selectedPost.likes_count}</p>
+                                    <div className='buttons-container'>
+                                        <button 
+                                            className={`like-button ${isLoggedIn ? 'enabled' : 'disabled'}`} 
+                                            disabled={!isLoggedIn}
+                                        >
+                                            <i className="fas fa-heart"></i> {selectedPost.likes_count}
+                                        </button>
+                                    </div>
                                 </div>
 
                             <div className="comments-container">
@@ -174,6 +230,7 @@ const ProfilePage = () => {
                 </div>
             </div>
         </div>
+        </>
     );
 };
 

@@ -191,3 +191,86 @@ def user_profile_view(request, username):
         return Response(serializer.data, status=status.HTTP_200_OK)
     except MyUser.DoesNotExist:
         return Response({"error": "User not found"}, status=status.HTTP_404_NOT_FOUND)
+    
+@api_view(['GET'])
+def check_user_view(request, username):
+    token = request.headers.get('Authorization')
+    
+    if not token or not token.startswith("Bearer "):
+        return Response(
+            {"error": "Bearer token missing or incorrectly formatted"},
+            status=status.HTTP_401_UNAUTHORIZED
+        )
+    
+    try:
+        token = token.split()[1]  # Extract the actual token after 'Bearer'
+        decoded_data = jwt.decode(token, settings.SECRET_KEY, algorithms=['HS256'])
+        user_id = decoded_data.get('user_id')
+
+        if not user_id:
+            return Response(
+                {"error": "Invalid token: user ID not found"},
+                status=status.HTTP_401_UNAUTHORIZED
+            )
+
+    except jwt.ExpiredSignatureError:
+        return Response(
+            {"error": "Token has expired"},
+            status=status.HTTP_401_UNAUTHORIZED
+        )
+    except jwt.InvalidTokenError:
+        return Response(
+            {"error": "Invalid token"},
+            status=status.HTTP_401_UNAUTHORIZED
+        )
+    
+    try:
+        logged_in_user = MyUser.objects.get(id=user_id)
+    except MyUser.DoesNotExist:
+        return Response({"message": "User not found."}, status=status.HTTP_404_NOT_FOUND)
+    
+    # Check if the logged-in user's username matches the username parameter
+    if logged_in_user.username == username:
+        return Response({"message": "User is authenticated and matches."}, status=status.HTTP_200_OK)
+    else:
+        return Response({"message": "User is authenticated but does not match."}, status=status.HTTP_403_FORBIDDEN)
+    
+
+@api_view(['GET'])
+def get_username_view(request):
+    token = request.headers.get('Authorization')
+    
+    if not token or not token.startswith("Bearer "):
+        return Response(
+            {"error": "Bearer token missing or incorrectly formatted"},
+            status=status.HTTP_401_UNAUTHORIZED
+        )
+    
+    try:
+        token = token.split()[1]  # Extract the actual token after 'Bearer'
+        decoded_data = jwt.decode(token, settings.SECRET_KEY, algorithms=['HS256'])
+        user_id = decoded_data.get('user_id')
+
+        if not user_id:
+            return Response(
+                {"error": "Invalid token: user ID not found"},
+                status=status.HTTP_401_UNAUTHORIZED
+            )
+
+    except jwt.ExpiredSignatureError:
+        return Response(
+            {"error": "Token has expired"},
+            status=status.HTTP_401_UNAUTHORIZED
+        )
+    except jwt.InvalidTokenError:
+        return Response(
+            {"error": "Invalid token"},
+            status=status.HTTP_401_UNAUTHORIZED
+        )
+    
+    try:
+        logged_in_user = MyUser.objects.get(id=user_id)
+    except MyUser.DoesNotExist:
+        return Response({"message": "User not found."}, status=status.HTTP_404_NOT_FOUND)
+
+    return Response({'username': logged_in_user.username})

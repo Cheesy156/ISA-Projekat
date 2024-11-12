@@ -6,6 +6,7 @@ import { toast } from 'react-toastify';
 import { useDropzone } from 'react-dropzone';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
+import Nav from "../components/Nav";
 
 const CreatePost = () => {
     const [text, setText] = useState('');
@@ -73,6 +74,8 @@ const CreatePost = () => {
     };
 
     return (
+        <>
+        <Nav/>
         <div className="create-post-container">
             <h2>Create a New Post</h2>
             <form onSubmit={handleSubmit}>
@@ -115,6 +118,7 @@ const CreatePost = () => {
                 </button>
             </form>
         </div>
+        </>
     );
 };
 
