@@ -91,7 +91,7 @@ def create_post(request):
 
             if 'latitude' in data and 'longitude' in data:
                 cache_key = f"post_location_{post.id}"
-                cache.set(cache_key, (post.latitude, post.longitude), timeout=86400)  # Cache for 1 day
+                cache.set(cache_key, (post.latitude, post.longitude), timeout=86400)  # Cache for 1 day for the fun of it (maybe used later idk saved for convinience)
 
             return Response({
                 "message": "Post created successfully!",

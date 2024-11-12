@@ -5,13 +5,13 @@ import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet';
 import { toast } from 'react-toastify';
 import { useDropzone } from 'react-dropzone';
 import 'leaflet/dist/leaflet.css';
-
+import L from 'leaflet';
 
 const CreatePost = () => {
     const [text, setText] = useState('');
     const [latitude, setLatitude] = useState(null);
     const [longitude, setLongitude] = useState(null);
-    const [image, setImage] = useState(null);
+    const [picture, setPicture] = useState(null);
     const navigate = useNavigate();
 
     // Drag and drop image handler
@@ -20,11 +20,19 @@ const CreatePost = () => {
         const reader = new FileReader();
         reader.readAsDataURL(file);
         reader.onloadend = () => {
-            setImage(reader.result);
+            setPicture(reader.result);
         };
     }, []);
 
     const { getRootProps, getInputProps, isDragActive } = useDropzone({ onDrop, accept: 'image/*' });
+
+    const defaultIcon = L.icon({
+        iconUrl: require('leaflet/dist/images/marker-icon.png'),
+        iconSize: [25, 41],
+        iconAnchor: [12, 41],
+        popupAnchor: [1, -34],
+        tooltipAnchor: [16, -28],
+    });
 
     // Map click handler to get coordinates
     const LocationMarker = () => {
@@ -34,7 +42,7 @@ const CreatePost = () => {
                 setLongitude(e.latlng.lng);
             },
         });
-        return latitude && longitude ? <Marker position={[latitude, longitude]} /> : null;
+        return latitude && longitude ? <Marker position={[latitude, longitude]} icon={defaultIcon} /> : null;
     };
 
     const handleSubmit = async (e) => {
@@ -45,16 +53,14 @@ const CreatePost = () => {
         }
     
         const token = localStorage.getItem('authToken')
-        console.log(token);
-        const decodedToken = JSON.parse(atob(localStorage.getItem('authToken').split('.')[1]));
-        console.log(decodedToken);
+
         axios.post(
             'http://127.0.0.1:8000/api/create_post/',
             {
                 text,
                 latitude,
                 longitude,
-                image,
+                picture,
             },
             {
                 headers: {
@@ -63,7 +69,7 @@ const CreatePost = () => {
             })
             .then(response => {
                 console.log('Post created:', response.data);
-                navigate('/home');
+                navigate('/posts');
             })
             .catch(error => {
                 console.error('Error creating post:', error);
@@ -94,13 +100,13 @@ const CreatePost = () => {
                         ) : (
                             <p>Drag & drop an image here, or click to select one</p>
                         )}
-                        {image && <img src={image} alt="Preview" style={{ width: '100px', marginTop: '10px' }} />}
+                        {picture && <img src={picture} alt="Preview" style={{ width: '100px', marginTop: '10px' }} />}
                     </div>
                 </div>
 
                 <div className="form-group">
                     <label>Select Location on Map</label>
-                    <MapContainer center={[51.505, -0.09]} zoom={13} style={{ height: '400px', width: '100%' }}>
+                    <MapContainer center={[45.2396, 19.8227]} zoom={13} style={{ height: '400px', width: '100%' }}>
                         <TileLayer
                             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'

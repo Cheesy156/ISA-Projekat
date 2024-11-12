@@ -2,6 +2,9 @@ import React, { useState } from 'react';
 import '../css/post.css';
 import axios from 'axios';
 import { useEffect } from 'react';
+import L from 'leaflet';
+import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
+import { Link } from 'react-router-dom';
 /*
 const dummyPosts = [
     {
@@ -242,7 +245,8 @@ const PostPages = () => {
         // Fetch posts from the api/posts
         axios.get('http://127.0.0.1:8000/api/posts/')
             .then((response) => {
-                setPosts(response.data);
+                const sortedPosts = response.data.sort((a, b) => new Date(b.time_posted) - new Date(a.time_posted));
+                setPosts(sortedPosts);
                 setLoading(false);
             })
             .catch((error) => {
@@ -251,21 +255,46 @@ const PostPages = () => {
             });
     }, []);
 
-    console.log(posts)
+    const defaultIcon = L.icon({
+        iconUrl: require('leaflet/dist/images/marker-icon.png'),
+        iconSize: [25, 41],
+        iconAnchor: [12, 41],
+        popupAnchor: [1, -34],
+        tooltipAnchor: [16, -28],
+    });
+
+    const sortComments = (comments) => {
+        // Calculates likes + replies
+        const getTotalLikesAndReplies = (comment) => {
+            const likes = comment.likes_count || 0;
+            const replies = comment.subcomments ? comment.subcomments.length : 0;
+            return likes + replies;
+        };
+    
+        // Sort the comments array based on total likes + replies in descending order
+        return comments.sort((a, b) => {
+            const aTotal = getTotalLikesAndReplies(a);
+            const bTotal = getTotalLikesAndReplies(b);
+            return bTotal - aTotal;  // Sort in descending order
+        });
+    };
+    
 
     const handleShowMore = (post) => {
         setSelectedPost(post);
+        document.body.style.overflow = 'hidden';
     };
 
     const closeModal = () => {
         setSelectedPost(null);
+        document.body.style.overflow = 'auto';
     };
 
     const renderComments = (comments) => {
         return comments.map((comment) => (
             <div key={comment.id} className="comment">
-                <p><strong>Username:</strong> {comment.username}</p>
-                <p><strong>Komentar:</strong> {comment.text}</p>
+                <p><strong><Link to={`/profile/${comment.username}`} style={{ textDecoration: 'none', color: 'inherit' }}> {comment.username} </Link></strong></p>
+                <p><italic> {comment.text} </italic></p>
                 <p><strong>Likes:</strong> {comment.likes_count}</p>
                 {comment.subcomments && comment.subcomments.length > 0 && (
                     <div className="subcomments">
@@ -283,14 +312,36 @@ const PostPages = () => {
                 {
                     posts.map((post) => (
                         <div key={post.id} className="post">
-                            <div className="post-image">
-                                {post.picture && <img src={post.picture} alt="Post slika"/>}
-                            </div>
+
                             <div className="post-details">
-                                <p><strong>Username:</strong> {post.username}</p>
-                                <p><strong>Content:</strong> {post.text}</p>
-                                <p><strong>Date:</strong> {new Date(post.time_posted).toLocaleString()}</p>
-                                <p><strong>Location:</strong> {post.latitude}, {post.longitude}</p>
+                                <div className="post-image">
+                                    {post.picture && <img src={post.picture} alt="Post slika"/>}
+                                </div>
+                                <div style={{ height: '200px', width: '100%' }}>
+                                    <MapContainer
+                                        center={[post.latitude, post.longitude]}
+                                        zoom={13}
+                                        style={{ height: '100%', width: '100%' }}
+                                        scrollWheelZoom={false}
+                                    >
+                                        <TileLayer
+                                            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                                            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+                                        />
+                                        <Marker position={[post.latitude, post.longitude]} icon={defaultIcon}>
+                                            <Popup>
+                                                <strong>
+                                                    <Link to={`/profile/${post.username}`} style={{ textDecoration: 'none', color: 'inherit' }}>     
+                                                        {post.username}'s
+                                                    </Link>
+                                                </strong> post<br />
+                                                {post.text}<br />
+                                                <strong>Date:</strong> {new Date(post.time_posted).toLocaleString()}
+                                            </Popup>
+                                        </Marker>
+                                    </MapContainer>
+                                </div>
+                    
                                 <p><strong>Likes:</strong> {post.likes_count}</p>
                                 <button onClick={() => handleShowMore(post)}>Show More</button>
                                 {isAuth && <button>Edit Post</button>}
@@ -300,29 +351,50 @@ const PostPages = () => {
 
                 {selectedPost && (
                     <div className="modal">
-                        <div className="modal-content">
+                        
                             <span className="close-button" onClick={closeModal}>&times;</span>
-                            <h2>Detalji Posta</h2>
-                            <div className="post-details-modal">
-                                <p><strong>Username:</strong> {selectedPost.username}</p>
-                                <p><strong>Content:</strong> {selectedPost.text}</p>
-                                <p><strong>Date:</strong> {new Date(selectedPost.time_posted).toLocaleString()}</p>
-                                <p><strong>Location:</strong> {selectedPost.latitude}, {selectedPost.longitude}</p>
-                                <p><strong>Likes:</strong> {selectedPost.likes_count}</p>
-                                {selectedPost.picture && (
-                                    <div className="post-image">
-                                        <img src={selectedPost.picture} alt="Post slika"/>
+                                <div className="post-details-modal">
+                                    {selectedPost.picture && (
+                                        <div className="post-image-detail">
+                                            <img src={selectedPost.picture} alt="Post slika"/>
+                                        </div>
+                                    )}
+                                    <div style={{ height: '200px', width: '100%' }}>
+                                        <MapContainer
+                                            center={[selectedPost.latitude, selectedPost.longitude]}
+                                            zoom={13}
+                                            style={{ height: '100%', width: '100%' }}
+                                            scrollWheelZoom={false}
+                                        >
+                                            <TileLayer
+                                                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                                                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+                                            />
+                                            <Marker position={[selectedPost.latitude, selectedPost.longitude]} icon={defaultIcon}>
+                                                <Popup>
+                                                    <strong>
+                                                        <Link to={`/profile/${selectedPost.username}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+                                                            {selectedPost.username}'s
+                                                        </Link>
+                                                    </strong> post<br />
+                                                    {selectedPost.text}<br />
+                                                    <strong>Date:</strong> {new Date(selectedPost.time_posted).toLocaleString()}
+                                                </Popup>
+                                            </Marker>
+                                        </MapContainer>
                                     </div>
-                                )}
-                            </div>
-                                <h3>Komentari</h3>
+
+                                    <p><strong>Likes:</strong> {selectedPost.likes_count}</p>
+                                </div>
+
                                 <div className="comments-container">
-                                    {renderComments(selectedPost.comments)}
+                                    <h3>Comments</h3>
+                                    {renderComments(sortComments(selectedPost.comments))}
                                 </div>
                             </div>
-                        </div>
-                        )}
-                    </div>
+
+                    )}
+            </div>
         </div>
     );
 };

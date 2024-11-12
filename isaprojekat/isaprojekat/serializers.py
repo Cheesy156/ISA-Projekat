@@ -79,7 +79,7 @@ class PostSerializer(serializers.ModelSerializer):
     class Meta:
         model = Post
         fields = ['id', 'text', 'latitude', 'longitude', 'time_posted', 'picture', 'user']
-    '''
+
     # Validate if base64 can be decoded
     def validate_picture_base64(self, value):
         try:
@@ -87,7 +87,7 @@ class PostSerializer(serializers.ModelSerializer):
         except Exception:
             raise serializers.ValidationError("Invalid image data.")
         return value
-    '''
+
 
 
 class CommentSerializer(serializers.ModelSerializer):
