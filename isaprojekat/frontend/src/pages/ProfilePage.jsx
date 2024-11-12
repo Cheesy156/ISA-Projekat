@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import axios from 'axios';
+import api from '../utils/axiosInstance';
 import '../css/profilePage.css'
 
 import L from 'leaflet';
@@ -20,7 +20,7 @@ const ProfilePage = () => {
         // Fetch profile and posts
         const fetchData = async () => {
             try {
-                const response = await axios.get(`http://127.0.0.1:8000/api/profile/${username}/`);
+                const response = await api.get(`/profile/${username}/`);
                 
                 // Set user info and sort posts by `time_posted`
                 setUserInfo({

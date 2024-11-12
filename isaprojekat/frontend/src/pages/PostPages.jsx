@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import '../css/post.css';
-import axios from 'axios';
+import api from '../utils/axiosInstance';
 import { useEffect } from 'react';
 import L from 'leaflet';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
@@ -237,13 +237,13 @@ const dummyPosts = [
 
 const PostPages = () => {
     const [selectedPost, setSelectedPost] = useState(null);
-    const isAuth = false;
+    const isAuth = true;
     const [posts, setPosts] = useState([]);
     const [loading, setLoading] = useState(true)
 
     useEffect(() => {
         // Fetch posts from the api/posts
-        axios.get('http://127.0.0.1:8000/api/posts/')
+        api.get('/posts/')
             .then((response) => {
                 const sortedPosts = response.data.sort((a, b) => new Date(b.time_posted) - new Date(a.time_posted));
                 setPosts(sortedPosts);
@@ -296,6 +296,8 @@ const PostPages = () => {
                 <p><strong><Link to={`/profile/${comment.username}`} style={{ textDecoration: 'none', color: 'inherit' }}> {comment.username} </Link></strong></p>
                 <p><italic> {comment.text} </italic></p>
                 <p><strong>Likes:</strong> {comment.likes_count}</p>
+                {isAuth && <button>Like</button>}
+                {isAuth && <button>Comment</button>}
                 {comment.subcomments && comment.subcomments.length > 0 && (
                     <div className="subcomments">
                         {renderComments(comment.subcomments)}
@@ -317,7 +319,7 @@ const PostPages = () => {
                                 <div className="post-image">
                                     {post.picture && <img src={post.picture} alt="Post slika"/>}
                                 </div>
-                                <div style={{ height: '200px', width: '100%' }}>
+                                <div style={{ height: '170px', width: '100%' }}>
                                     <MapContainer
                                         center={[post.latitude, post.longitude]}
                                         zoom={13}
@@ -344,7 +346,7 @@ const PostPages = () => {
                     
                                 <p><strong>Likes:</strong> {post.likes_count}</p>
                                 <button onClick={() => handleShowMore(post)}>Show More</button>
-                                {isAuth && <button>Edit Post</button>}
+                                {isAuth && <button>Like Post</button>}
                             </div>
                         </div>
                 ))}

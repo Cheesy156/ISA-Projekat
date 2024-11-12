@@ -1,11 +1,11 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from "react-router-dom";
-import axios from 'axios';
 import { loginUser, checkLoggedIn } from "../utils/auth";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import '../css/auth.css';
 import Nav from "../components/Nav";
+import api from '../utils/axiosInstance';
 
 const Login = () => {
     const host = process.env.REACT_APP_HOST;
@@ -19,7 +19,7 @@ const Login = () => {
     const handleLogin = async (e) => {
         e.preventDefault();
         try {
-            const response = await axios.post('http://127.0.0.1:8000/api/login/', {
+            const response = await api.post('/login/', {
                 username_or_email: username,
                 password: password,
             });
@@ -52,7 +52,7 @@ const Login = () => {
     return (
         <>
             <Nav/>
-            <div className="auth-form-container">
+            <div className="auth-login-container">
             <h2 className='title'>Login</h2>
             <form onSubmit={handleLogin}>
                 <div className="form-group">

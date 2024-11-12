@@ -16,6 +16,7 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 from .views import register_user, create_post, LoginView,get_posts_with_comments, create_comment, user_profile_view
+from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -24,5 +25,6 @@ urlpatterns = [
     path('api/create_post/', create_post, name='create_post'),
     path('api/posts/', get_posts_with_comments, name='get_posts_with_comments'),
     path('api/posts/comments', create_comment, name='create_comment'),
-    path('api/profile/<str:username>/',user_profile_view, name='user_profile')
+    path('api/profile/<str:username>/',user_profile_view, name='user_profile'),
+    path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh')
 ]

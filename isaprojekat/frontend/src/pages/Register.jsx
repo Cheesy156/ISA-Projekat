@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from "react-router-dom";
-import axios from 'axios';
+import api from '../utils/axiosInstance';
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import '../css/auth.css';
@@ -48,7 +48,7 @@ const Register = () => {
         e.preventDefault();
         if (validateForm()) {
             try {
-                const response = await axios.post('http://127.0.0.1:8000/api/register/', {
+                const response = await api.post('/register/', {
                     email,
                     address,
                     username,

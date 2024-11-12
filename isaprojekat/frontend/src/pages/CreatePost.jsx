@@ -1,6 +1,6 @@
 import React, { useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import api from '../utils/axiosInstance';
 import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet';
 import { toast } from 'react-toastify';
 import { useDropzone } from 'react-dropzone';
@@ -54,18 +54,13 @@ const CreatePost = () => {
     
         const token = localStorage.getItem('authToken')
 
-        axios.post(
-            'http://127.0.0.1:8000/api/create_post/',
+        api.post(
+            '/create_post/',
             {
                 text,
                 latitude,
                 longitude,
                 picture,
-            },
-            {
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                }
             })
             .then(response => {
                 console.log('Post created:', response.data);
