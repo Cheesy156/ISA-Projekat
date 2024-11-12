@@ -50,7 +50,7 @@ const ProfilePage = () => {
     }, [username]);
 
     if (loading) return <p>Loading...</p>;
-    if (!userposts) return <p>User not found.</p>;
+    if (!userInfo) return <p>User not found.</p>;
 
     const sortComments = (comments) => {
         // Calculates likes + replies
@@ -71,7 +71,7 @@ const ProfilePage = () => {
     const renderComments = (comments) => {
         return comments.map((comment) => (
             <div key={comment.id} className="comment">
-                <p><strong><Link to={`/profile/${comment.username}`} style={{ textDecoration: 'none', color: 'inherit' }}> {comment.username} </Link></strong></p>
+                <p><strong><Link to={`/profile/${comment.username}`} onClick={closeModal} style={{ textDecoration: 'none', color: 'inherit' }}> {comment.username} </Link></strong></p>
                 <p><italic> {comment.text} </italic></p>
                 <p><strong>Likes:</strong> {comment.likes_count}</p>
                 {comment.subcomments && comment.subcomments.length > 0 && (
@@ -111,8 +111,8 @@ const ProfilePage = () => {
                     className="profile-pic"
                 />
                 <h2>{userInfo.username}</h2>
-                <p><strong>Name:</strong> {userInfo.first_name} {userInfo.last_name}</p>
-                <p>{userInfo.city}, <strong> {userInfo.country} </strong></p>
+                <p>{userInfo.first_name} {userInfo.last_name}</p>
+                <p>From: {userInfo.city}, <strong> {userInfo.country} </strong></p>
             </div>
 
             <div className="user-posts">
@@ -150,7 +150,7 @@ const ProfilePage = () => {
                                             <Marker position={[selectedPost.latitude, selectedPost.longitude]} icon={defaultIcon}>
                                                 <Popup>
                                                     <strong>
-                                                        <Link to={`/profile/${username}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+                                                        <Link to={`/profile/${username}`} onClick={closeModal} style={{ textDecoration: 'none', color: 'inherit' }}>
                                                             {username}'s
                                                         </Link>
                                                     </strong> post<br />

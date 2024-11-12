@@ -19,7 +19,7 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
     def validate(self, data):
         # Check if email and username are unique
         if MyUser.objects.filter(email=data['email']).exists():
-            raise serializers.ValidationError("Email is already in use.")
+            raise serializers.ValidationError({'email': "Email is already in use."})
         if MyUser.objects.filter(username=data['username']).exists():
             raise serializers.ValidationError("Username is already in use.")
         

@@ -45,3 +45,7 @@ input[type="text"], input[type="password"] {
 .auth-submit-btn:hover {
     background-color: #0056b3;
 }
+
+.profile-pic {
+    width: 100px;
+}
