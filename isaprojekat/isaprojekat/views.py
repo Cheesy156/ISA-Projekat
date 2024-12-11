@@ -16,10 +16,20 @@ from django.conf import settings
 from django.db import transaction, IntegrityError
 from django.views.decorators.csrf import csrf_exempt
 from .models import Post, MyUser, LikePost
+from django_ratelimit.decorators import ratelimit
+from django.utils.decorators import method_decorator
+from django_ratelimit.exceptions import Ratelimited
 
 @api_view(['POST'])
 @permission_classes([AllowAny])
+@ratelimit(key='ip', rate='5/m', block=False)
 def register_user(request):
+    if getattr(request, 'limited', False): 
+        return Response(
+            {"error": "Too many requests. Please try again later."},
+            status=429
+        )
+    
     time.sleep(2)
 
     with transaction.atomic():
@@ -30,25 +40,8 @@ def register_user(request):
                 serializer.save()
                 return Response({"message": "User registered successfully!"}, status=status.HTTP_201_CREATED)
             except IntegrityError:
-                return Response({"error": "A user with this username or email already exists."}, status=status.HTTP_400_BAD_REQUEST)
+                    return Response({"error": "A user with this username or email already exists."}, status=status.HTTP_400_BAD_REQUEST)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-@api_view(['POST'])
-def login_user(request):
-    serializer = UserLoginSerializer(data=request.data)
-    if serializer.is_valid():
-        user = serializer.validated_data["user"]
-
-        # Generate JWT tokens for the user
-        refresh = RefreshToken.for_user(user)
-
-        return Response({
-            "access": str(refresh.access_token), 
-            "refresh": str(refresh), # Probably wont be used for this project
-            "message": "Login successful!"
-        }, status=status.HTTP_200_OK)
-    
-    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(['POST'])
 def logout_user(request):
@@ -113,23 +106,35 @@ def create_post(request):
 
 class LoginView(APIView):
     permission_classes = [AllowAny]  # Allow anyone to access this view
-
-    def post(self, request, *args, **kwargs):
-        serializer = UserLoginSerializer(data=request.data)
-        if serializer.is_valid():
-            user = serializer.validated_data["user"]
-
-            # Generate JWT tokens for the user
-            refresh = RefreshToken.for_user(user)
-
-            return Response({
-                "access": str(refresh.access_token),
-                "refresh": str(refresh),  # Optional if not used
-                "message": "Login successful!"
-            }, status=status.HTTP_200_OK)
-
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
+    @method_decorator(ratelimit(key='ip', rate='5/m', block=False))
+    def post(self, request, *args, **kwargs):
+        if getattr(request, 'limited', False):  # `limited` attribute is set by Ratelimit
+            return Response(
+                {"error": "Too many requests. Please try again later."},
+                status=429
+            )
+        try:
+            serializer = UserLoginSerializer(data=request.data)
+            if serializer.is_valid():
+                user = serializer.validated_data["user"]
+
+                # Generate JWT tokens for the user
+                refresh = RefreshToken.for_user(user)
+
+                return Response({
+                    "access": str(refresh.access_token),
+                    "refresh": str(refresh),  # Optional if not used
+                    "message": "Login successful!"
+                }, status=status.HTTP_200_OK)
+
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        except Ratelimited:
+            return Response(
+                {"error": "Too many requests. Please try again later."},
+                status=429
+            )
+        
 @api_view(['POST'])
 def create_comment(request):
     # Verify and decode the JWT token

@@ -71,7 +71,7 @@ const Register = () => {
                     } else if (errors.email) {
                         toast.error("User with that email already exists");
                     } else {
-                        toast.error("Registration failed. Please check your input.");
+                        toast.error(error.response.data.error || "Registration failed. Please check your input.");
                     }
                 } else {
                     toast.error("An error occurred. Please try again.");

@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'isaprojekat',
     'rest_framework_simplejwt',
     'corsheaders',
+    'django_ratelimit',
 ]
 
 REST_FRAMEWORK = {
@@ -72,6 +73,8 @@ MIDDLEWARE = [
 
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
+
+    'django_ratelimit.middleware.RatelimitMiddleware',
 ]
 
 CORS_ALLOWED_ORIGINS = [
@@ -110,6 +113,20 @@ TEMPLATES = [
 WSGI_APPLICATION = 'isaprojekat.wsgi.application'
 
 AUTH_USER_MODEL = 'isaprojekat.MyUser'
+
+CACHES = {
+    'default': {
+        'BACKEND': 'django_redis.cache.RedisCache',
+        'LOCATION': 'redis://127.0.0.1:6379/1',  # Redis server address and database index
+        'OPTIONS': {
+            'CLIENT_CLASS': 'django_redis.client.DefaultClient',
+        },
+    },
+}
+
+RATELIMIT_VIEW = 'django_ratelimit.exceptions.Ratelimited'
+RATELIMIT_EXCEPTION_STATUS_CODE = 429  # Use 429 for rate-limited responses
+
 # Database
 # https://docs.djangoproject.com/en/4.1/ref/settings/#databases
 
@@ -143,7 +160,6 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
 # Internationalization
 # https://docs.djangoproject.com/en/4.1/topics/i18n/
 
@@ -155,7 +171,6 @@ USE_I18N = True
 
 USE_TZ = True
 
-
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.1/howto/static-files/
 
@@ -165,3 +180,4 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/4.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+

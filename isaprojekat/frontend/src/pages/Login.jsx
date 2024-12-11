@@ -34,7 +34,7 @@ const Login = () => {
             }
         } catch (error) {
             if (error.response && error.response.data) {
-                toast.error(error.response.data.message || "Login failed");
+                toast.error(error.response.data.error || "Login failed");
             } else {
                 toast.error("An error occurred. Please try again.");
             }
