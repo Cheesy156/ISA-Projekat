@@ -19,6 +19,7 @@ from .models import Post, MyUser, LikePost
 from django_ratelimit.decorators import ratelimit
 from django.utils.decorators import method_decorator
 from django_ratelimit.exceptions import Ratelimited
+from django.utils.timezone import now
 
 @api_view(['POST'])
 @permission_classes([AllowAny])
@@ -85,7 +86,11 @@ def create_post(request):
             if 'latitude' in data and 'longitude' in data:
                 cache_key = f"post_location_{post.id}"
                 cache.set(cache_key, (post.latitude, post.longitude), timeout=86400)  # Cache for 1 day for the fun of it (maybe used later idk saved for convinience)
-
+                value = cache.get(cache_key)
+                print(value)
+                full_key = cache.make_key(cache_key)
+                print(full_key)  # This will show the full key as stored in Redis
+            
             return Response({
                 "message": "Post created successfully!",
                 "post": serializer.data
@@ -118,6 +123,10 @@ class LoginView(APIView):
             serializer = UserLoginSerializer(data=request.data)
             if serializer.is_valid():
                 user = serializer.validated_data["user"]
+
+                # Update the last_login field
+                user.last_login = now()
+                user.save(update_fields=['last_login'])
 
                 # Generate JWT tokens for the user
                 refresh = RefreshToken.for_user(user)

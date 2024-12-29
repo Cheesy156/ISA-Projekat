@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt',
     'corsheaders',
     'django_ratelimit',
+    'django_celery_beat',
 ]
 
 REST_FRAMEWORK = {
@@ -117,15 +118,27 @@ AUTH_USER_MODEL = 'isaprojekat.MyUser'
 CACHES = {
     'default': {
         'BACKEND': 'django_redis.cache.RedisCache',
-        'LOCATION': 'redis://127.0.0.1:6379/1',  # Redis server address and database index
+        'LOCATION': 'redis://127.0.0.1:6379/1',  # Adjust the location as needed
         'OPTIONS': {
             'CLIENT_CLASS': 'django_redis.client.DefaultClient',
-        },
-    },
+        }
+    }
 }
+
+# Celery Configuration
+CELERY_BROKER_URL = 'redis://127.0.0.1:6379/0'  # Replace with your Redis broker URL
+CELERY_RESULT_BACKEND = 'redis://127.0.0.1:6379/0'  # Optional, if you need result backend
+
 
 RATELIMIT_VIEW = 'django_ratelimit.exceptions.Ratelimited'
 RATELIMIT_EXCEPTION_STATUS_CODE = 429  # Use 429 for rate-limited responses
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_USE_TLS = True
+EMAIL_PORT = 587
+EMAIL_HOST_USER = 'ffttnnnnttpp@gmail.com'
+EMAIL_HOST_PASSWORD = 'vtps qjaq rcrt jqah'
 
 # Database
 # https://docs.djangoproject.com/en/4.1/ref/settings/#databases
