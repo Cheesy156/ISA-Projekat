@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'isaprojekat',
     'rest_framework_simplejwt',
     'corsheaders',
+    'django_ratelimit',
 ]
 
 REST_FRAMEWORK = {
@@ -113,6 +114,15 @@ WSGI_APPLICATION = 'isaprojekat.wsgi.application'
 
 AUTH_USER_MODEL = 'isaprojekat.MyUser'
 
+CACHES = {
+    'default': {
+        'BACKEND': 'django_redis.cache.RedisCache',
+        'LOCATION': 'redis://127.0.0.1:6379/1',  # Redis server address and database index
+        'OPTIONS': {
+            'CLIENT_CLASS': 'django_redis.client.DefaultClient',
+        },
+    },
+}
 
 RATELIMIT_VIEW = 'django_ratelimit.exceptions.Ratelimited'
 RATELIMIT_EXCEPTION_STATUS_CODE = 429  # Use 429 for rate-limited responses
