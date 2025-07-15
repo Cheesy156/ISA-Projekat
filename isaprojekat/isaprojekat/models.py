@@ -15,7 +15,8 @@ class MyUser(AbstractUser):
     city = models.CharField(max_length=100, blank=True, null=True)
     country = models.CharField(max_length=100, blank=True, null=True)
     profile_pic_base64 = models.TextField(blank=True, null=True)
-
+    last_login = models.DateTimeField(blank=True, null=True)
+    
     REQUIRED_FIELDS = ['email', 'first_name', 'last_name']
 
     def set_profile_pic(self, image_path):

@@ -101,7 +101,7 @@ const PostPages = () => {
         <Nav/>
         <div>
             <h1 className="title">Post Page</h1>
-            <h2 disabled={isAuth}>Login to interact with the community</h2>
+            {!isAuth && <h2>Login to interact with the community</h2>}
             <br></br>
             <div className="home">
                 {

@@ -3,6 +3,8 @@ import django
 import random
 from faker import Faker
 from django.utils import timezone
+from datetime import timedelta
+
 import base64
 # Set up Django environment
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'isaprojekat.settings')
@@ -46,6 +48,7 @@ def create_users(num_users=10):
             address=fake.address(),
             city=fake.city(),
             country=fake.country(),
+            last_login = timezone.now() - timedelta(days=random.randint(1, 20))
         )
     
     adminuser = MyUser.objects.create_user(
@@ -58,6 +61,7 @@ def create_users(num_users=10):
             address=fake.address(),
             city=fake.city(),
             country=fake.country(),
+            last_login = timezone.now() - timedelta(days=random.randint(1, 20))
         )
     users.append(useruser)
     users.append(adminuser)
@@ -73,7 +77,8 @@ def create_users(num_users=10):
             address=fake.address(),
             city=fake.city(),
             country=fake.country(),
-            profile_pic_base64 = base64_image
+            profile_pic_base64 = base64_image,
+            last_login = timezone.now() - timedelta(days=random.randint(1, 100))
         )
         users.append(user)
 

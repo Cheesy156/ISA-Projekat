@@ -2,6 +2,7 @@ from rest_framework import serializers
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth.hashers import check_password
 from .models import MyUser, Post, Comment, LikePost, LikeComment
+from django.utils.timezone import now
 import uuid
 import base64
 
@@ -73,6 +74,9 @@ class UserLoginSerializer(serializers.Serializer):
         
         data["user"] = user
 
+        user.last_login = now()
+        user.save()
+        
         return data
     
 class PostSerializer(serializers.ModelSerializer):

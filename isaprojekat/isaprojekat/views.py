@@ -50,6 +50,29 @@ def logout_user(request):
     response.delete_cookie('access_token')
     return response
 
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def get_all_post_locations(request):
+    # Take from cache
+    cached_locations = cache.get('all_post_locations')
+    if cached_locations:
+        return Response(cached_locations)
+
+    # If not in cache get from database
+    posts = Post.objects.all()
+    locations = []
+    for post in posts:
+        if post.latitude and post.longitude:
+            locations.append({
+                'post_id': post.id,
+                'latitude': float(post.latitude),
+                'longitude': float(post.longitude),
+            })
+
+    cache.set('all_post_locations', locations, timeout=600)
+    return Response(locations)
+
+
 
 @api_view(['POST'])
 def create_post(request):
@@ -84,13 +107,13 @@ def create_post(request):
             post = serializer.save()
 
             if 'latitude' in data and 'longitude' in data:
+                # Cache single post location
                 cache_key = f"post_location_{post.id}"
-                cache.set(cache_key, (post.latitude, post.longitude), timeout=86400)  # Cache for 1 day for the fun of it (maybe used later idk saved for convinience)
-                value = cache.get(cache_key)
-                print(value)
-                full_key = cache.make_key(cache_key)
-                print(full_key)  # This will show the full key as stored in Redis
-            
+                cache.set(cache_key, (post.latitude, post.longitude), timeout=86400)
+
+                # Invalidate full locations cache so it refreshes on next GET
+                cache.delete('all_post_locations')
+
             return Response({
                 "message": "Post created successfully!",
                 "post": serializer.data

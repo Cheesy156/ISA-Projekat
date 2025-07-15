@@ -18,7 +18,7 @@ const Nav = () => {
 
     const handleProfile = async () => {
         try {
-            api.get('/get_username')
+            api.get('/get_username/')
             .then((response) => {
                 console.log(response.data);
                 setUsername(response.data.username);
