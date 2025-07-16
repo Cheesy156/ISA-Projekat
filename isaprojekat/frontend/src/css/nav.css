@@ -115,3 +115,37 @@
     min-height: 20px;
 }
 
+
+@keyframes rainbowBackground {
+  0% { background-color: #ff0000; }
+  16% { background-color: #ff7f00; }
+  32% { background-color: #ffff00; }
+  48% { background-color: #00ff00; }
+  64% { background-color: #0000ff; }
+  80% { background-color: #4b0082; }
+  100% { background-color: #8b00ff; }
+}
+
+.nearme-btn {
+  letter-spacing: 1px;
+  padding: 9px;
+  position: absolute;
+  top: 5px;
+  right: 110px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  font-weight: bold;
+  color: white;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  animation: rainbowBackground 5s linear infinite;
+  transition: transform 0.2s ease;
+}
+
+.nearme-btn:hover {
+  transform: scale(1.05);
+}
+

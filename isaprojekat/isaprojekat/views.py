@@ -9,6 +9,7 @@ from rest_framework.decorators import permission_classes
 from django.core.cache import cache
 from rest_framework.views import APIView
 import time
+import json
 from rest_framework_simplejwt.authentication import JWTAuthentication
 import jwt
 from django.shortcuts import get_object_or_404
@@ -20,6 +21,7 @@ from django_ratelimit.decorators import ratelimit
 from django.utils.decorators import method_decorator
 from django_ratelimit.exceptions import Ratelimited
 from django.utils.timezone import now
+from .utils import geocode_address, haversine
 
 @api_view(['POST'])
 @permission_classes([AllowAny])
@@ -37,11 +39,10 @@ def register_user(request):
         serializer = UserRegistrationSerializer(data=request.data)
         
         if serializer.is_valid():
-            try:
-                serializer.save()
-                return Response({"message": "User registered successfully!"}, status=status.HTTP_201_CREATED)
-            except IntegrityError:
-                    return Response({"error": "A user with this username or email already exists."}, status=status.HTTP_400_BAD_REQUEST)
+
+            serializer.save()
+            return Response({"message": "User registered successfully!"}, status=status.HTTP_201_CREATED)
+        
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(['POST'])
@@ -51,26 +52,77 @@ def logout_user(request):
     return response
 
 @api_view(['GET'])
-@permission_classes([AllowAny])
-def get_all_post_locations(request):
-    # Take from cache
-    cached_locations = cache.get('all_post_locations')
-    if cached_locations:
-        return Response(cached_locations)
+def user_nearby_posts(request):
+    token = request.headers.get('Authorization')
+    if not token:
+            return Response(
+                {"error": "Bearer token missing or incorrectly formatted"},
+                status=status.HTTP_401_UNAUTHORIZED
+            )
+    
+    # Check token format (make sure it starts with "Bearer ")
+    if not token.startswith("Bearer "):
+        return Response(
+            {"error": "Token format is incorrect"},
+            status=status.HTTP_401_UNAUTHORIZED
+        )
+    try:
+        token = token.split()[1]
+        decoded = jwt.decode(token, settings.SECRET_KEY, algorithms=['HS256'])
+        user = MyUser.objects.get(id=decoded['user_id'])
+        # Geocode user's profile location
+        lat, lon = geocode_address(user.address, user.city, user.country)
+        if not lat or not lon:
+            return Response({"error": "Could not geocode user location"}, status=400)
 
-    # If not in cache get from database
-    posts = Post.objects.all()
-    locations = []
-    for post in posts:
-        if post.latitude and post.longitude:
-            locations.append({
-                'post_id': post.id,
-                'latitude': float(post.latitude),
-                'longitude': float(post.longitude),
-            })
+        user_location = {
+            "latitude": lat,
+            "longitude": lon
+        }
 
-    cache.set('all_post_locations', locations, timeout=600)
-    return Response(locations)
+        # Get radius from query param or default to 5 km
+        try:
+            radius_km = float(request.GET.get('radius', 5))
+        except ValueError:
+            return Response({"error": "Invalid radius value"}, status=400)
+
+        # Get all cached post locations
+        cached_locations = cache.get('all_post_locations')
+        if not cached_locations:
+            # If not cached, cache them
+            posts = Post.objects.all()
+            cached_locations = []
+            for post in posts:
+                if post.latitude and post.longitude:
+                    cached_locations.append({
+                        'post_id': post.id,
+                        'latitude': float(post.latitude),
+                        'longitude': float(post.longitude),
+                    })
+            cache.set('all_post_locations', cached_locations, timeout=600)
+
+        # Filter post IDs inside radius
+        nearby_post_ids = []
+        for loc in cached_locations:
+            dist = haversine(lat, lon, loc['latitude'], loc['longitude'])
+            if dist <= radius_km:
+                nearby_post_ids.append(loc['post_id'])
+
+        # Fetch posts data only for nearby post IDs
+        nearby_posts = Post.objects.filter(id__in=nearby_post_ids)
+        serializer = PostCommentSerializer(nearby_posts, many=True)
+        
+        return Response({
+            "user_location": user_location, 
+            "nearby_posts": serializer.data
+        })
+        
+    except jwt.ExpiredSignatureError:
+        return Response({"error": "Token expired"}, status=401)
+    except jwt.InvalidTokenError:
+        return Response({"error": "Invalid token"}, status=401)
+    except MyUser.DoesNotExist:
+        return Response({"error": "User not found"}, status=404)
 
 
 
@@ -113,6 +165,7 @@ def create_post(request):
 
                 # Invalidate full locations cache so it refreshes on next GET
                 cache.delete('all_post_locations')
+                
 
             return Response({
                 "message": "Post created successfully!",

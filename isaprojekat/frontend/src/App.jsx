@@ -5,6 +5,7 @@ import Register from "./pages/Register";
 import CreatePost from './pages/CreatePost';
 import PostPages from './pages/PostPages';
 import ProfilePage from './pages/ProfilePage';
+import NearByPosts from './pages/NearByPosts';
 
 function App() {
   const isLoggedIn = localStorage.getItem('authToken');
@@ -17,6 +18,7 @@ function App() {
               <Route path='/createpost' element={<CreatePost/>} />
               <Route path='/posts' element ={ <PostPages/> } />
               <Route path='/profile/:username' element={ <ProfilePage/ >} />
+              <Route path='/nearme' element={<NearByPosts/ >} />
           </Routes>
       </BrowserRouter>
     </div>

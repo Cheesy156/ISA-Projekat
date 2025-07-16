@@ -45,6 +45,10 @@ const Nav = () => {
         navigate('/createpost')
     }
 
+    const handleNearMe = () => {
+        navigate('/nearme')
+    }
+
     return (
         <nav className="navbar">
             <div className="navbar-end">
@@ -60,6 +64,7 @@ const Nav = () => {
                         <button onClick={handlePosts} className="navbar-item posts-btn">Posts</button>
                         <button onClick={createPost} className='navbar-item createposts-btn'>Create Post</button>
                         <button onClick={handleLogout} className="navbar-item logout-btn">Logout</button>
+                        <button onClick={handleNearMe} className="navbar-item nearme-btn">NearMe</button>
                     </>
                 )}
             </div>

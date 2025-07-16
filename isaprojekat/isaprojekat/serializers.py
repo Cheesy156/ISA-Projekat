@@ -3,6 +3,7 @@ from django.contrib.auth.hashers import make_password
 from django.contrib.auth.hashers import check_password
 from .models import MyUser, Post, Comment, LikePost, LikeComment
 from django.utils.timezone import now
+from .utils import geocode_address
 import uuid
 import base64
 
@@ -24,6 +25,15 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
         if MyUser.objects.filter(username=data['username']).exists():
             raise serializers.ValidationError("Username is already in use.")
         
+        address = data.get('address')
+        city = data.get('city')
+        country = data.get('country')
+
+        lat, lon = geocode_address(address, city, country)
+
+        if lat is None or lon is None:
+            raise serializers.ValidationError("Invalid address. Please enter a valid real-world location.")
+
         return data
 
     def create(self, validated_data):
@@ -76,7 +86,7 @@ class UserLoginSerializer(serializers.Serializer):
 
         user.last_login = now()
         user.save()
-        
+
         return data
     
 class PostSerializer(serializers.ModelSerializer):

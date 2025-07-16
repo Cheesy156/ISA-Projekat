@@ -64,17 +64,23 @@ const Register = () => {
                 navigate("/"); // Redirect to login page or another page after success
             } catch (error) {
                 if (error.response && error.response.data) {
-                    const errors = error.response.data;
+                    const data = error.response.data;
 
-                    if (errors.username) {
-                        toast.error("User with that username already exists");
-                    } else if (errors.email) {
-                        toast.error("User with that email already exists");
+                    if (data.error) {
+                        toast.error(data.error);
+                    } else if (typeof data === 'object') {
+                        const firstErrorKey = Object.keys(data)[0];
+                        const firstError = data[firstErrorKey];
+                        if (Array.isArray(firstError)) {
+                            toast.error(firstError[0]);
+                        } else {
+                            toast.error(firstError);
+                        }
                     } else {
-                        toast.error(error.response.data.error || "Registration failed. Please check your input.");
+                        toast.error("Registration failed. Please check your input.");
                     }
                 } else {
-                    toast.error("An error occurred. Please try again.");
+                    toast.error("An unexpected error occurred.");
                 }
             }
         }

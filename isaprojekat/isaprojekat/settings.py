@@ -118,7 +118,7 @@ AUTH_USER_MODEL = 'isaprojekat.MyUser'
 CACHES = {
     'default': {
         'BACKEND': 'django_redis.cache.RedisCache',
-        'LOCATION': 'redis://127.0.0.1:6379/1',  # Adjust the location as needed
+        'LOCATION': 'redis://127.0.0.1:6379/1',  
         'OPTIONS': {
             'CLIENT_CLASS': 'django_redis.client.DefaultClient',
         }
@@ -126,8 +126,8 @@ CACHES = {
 }
 
 # Celery Configuration
-CELERY_BROKER_URL = 'redis://127.0.0.1:6379/0'  # Replace with your Redis broker URL
-CELERY_RESULT_BACKEND = 'redis://127.0.0.1:6379/0'  # Optional, if you need result backend
+CELERY_BROKER_URL = 'redis://127.0.0.1:6379/0' 
+CELERY_RESULT_BACKEND = 'redis://127.0.0.1:6379/0'  
 
 
 RATELIMIT_VIEW = 'django_ratelimit.exceptions.Ratelimited'
