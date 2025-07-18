@@ -22,6 +22,10 @@ from django.utils.decorators import method_decorator
 from django_ratelimit.exceptions import Ratelimited
 from django.utils.timezone import now
 from .utils import geocode_address, haversine
+from django.views.decorators.http import require_POST
+from django.http import JsonResponse
+from .utils import rate_limiter
+
 
 @api_view(['POST'])
 @permission_classes([AllowAny])
@@ -52,6 +56,7 @@ def logout_user(request):
     return response
 
 @api_view(['GET'])
+@rate_limiter(max_requests=5, period=60)
 def user_nearby_posts(request):
     token = request.headers.get('Authorization')
     if not token:

@@ -106,7 +106,7 @@ class CommentSerializer(serializers.ModelSerializer):
     subcomments = serializers.SerializerMethodField()
     likes_count = serializers.SerializerMethodField()
     username = serializers.SerializerMethodField()
-
+    
     class Meta:
         model = Comment
         fields = ['id', 'text', 'post', 'user', 'parent_comment', 'likes_count', 'username', 'subcomments']
