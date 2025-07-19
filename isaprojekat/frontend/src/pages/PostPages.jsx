@@ -7,7 +7,7 @@ import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import { Link } from 'react-router-dom';
 import Nav from "../components/Nav";
 import { Toaster } from 'react-hot-toast';
- import toast from 'react-hot-toast';
+import toast from 'react-hot-toast';
 
 const PostPages = () => {
     const [selectedPost, setSelectedPost] = useState(null);
@@ -30,7 +30,7 @@ const PostPages = () => {
         api.get('/check_admin/')
         .then((res) => setIsAdmin(res.data.is_admin))
         .catch((err) => console.error("Error checking admin:", err));
-    }, []);
+    }, [posts]);
 
     const defaultIcon = L.icon({
         iconUrl: require('leaflet/dist/images/marker-icon.png'),
@@ -59,10 +59,13 @@ const PostPages = () => {
     const promotePost = async (postId) => {
         try {
             await api.post(`/posts/${postId}/advertise/`);
-            const updatedPosts = posts.map(post =>
-                post.id === postId ? { ...post, ad_promoted_at: new Date().toISOString() } : post
+            
+            setPosts((prevPosts) =>
+                prevPosts.map((post) =>
+                    post.id === postId ? { ...post, ad_promoted_at: new Date().toISOString() } : post
+                )
             );
-            setPosts(updatedPosts);
+
             toast.success('Post promoted to ad agencies!');
         } catch (error) {
             console.error("Error promoting post:", error);
@@ -184,7 +187,7 @@ const PostPages = () => {
                                         </button>
                                     )}
                                 </div>
-                                {post.advertised_at && (
+                                {isAdmin && post.advertised_at && (
                                         <p style={{ fontStyle: 'italic', fontSize: '0.9rem', color: 'green' }}>
                                             Promoted on {new Date(post.advertised_at).toLocaleString()}
                                         </p>

@@ -2,7 +2,7 @@ from geopy.geocoders import Nominatim
 from math import radians, sin, cos, sqrt, atan2
 import time
 from functools import wraps
-from django.http import JsonResponse
+from rest_framework.response import Response
 
 def geocode_address(address, city, country):
     geolocator = Nominatim(user_agent="isa_project")
@@ -17,10 +17,6 @@ def haversine(lat1, lon1, lat2, lon2):
     dlon = radians(lon2 - lon1)
     a = sin(dlat/2)**2 + cos(radians(lat1)) * cos(radians(lat2)) * sin(dlon/2)**2
     return R * 2 * atan2(sqrt(a), sqrt(1 - a))
-
-import time
-from functools import wraps
-from django.http import JsonResponse
 
 # Global storage for rate_limiter
 rate_limit_storage = {}
@@ -42,7 +38,7 @@ def rate_limiter(max_requests=5, period=60):
             rate_limit_storage[user_id] = recent_requests
 
             if len(recent_requests) >= max_requests:
-                return JsonResponse({
+                return Response({
                     "error": "Rate limit exceeded. Only 5 request per minute allowed."
                 }, status=429)
 

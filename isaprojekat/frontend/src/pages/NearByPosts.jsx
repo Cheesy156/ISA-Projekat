@@ -10,6 +10,8 @@ import { Button, Slider } from "@mui/material";
 import L from "leaflet";
 import Nav from "../components/Nav";
 import '../css/post.css';
+import { Toaster } from 'react-hot-toast';
+import toast from 'react-hot-toast';
 
 const NearByPosts = () => {
     const [userLocation, setUserLocation] = useState(null);
@@ -33,7 +35,7 @@ const NearByPosts = () => {
             setUserLocation(data.user_location);
             setPosts(data.nearby_posts);
         } catch (err) {
-            console.error("Fetch error:", err);
+            toast.error(err?.response?.data?.error || 'Something went wrong!');
         } finally {
             setLoading(false);
         }
@@ -106,6 +108,10 @@ const NearByPosts = () => {
 
     return (
         <>
+        <Toaster
+                    position="top-center"
+                    reverseOrder={true}
+                />
         <Nav/>
         <div style={{ display: 'flex', flexDirection: 'row', width: '100%' }}>
         <div style={{ flex: 1, padding: '1rem' }}>
@@ -123,7 +129,7 @@ const NearByPosts = () => {
             {loading ? (
             <p>Loading map...</p>
             ) : !userLocation ? (
-            <p>Could not determine your location from profile data.</p>
+            <p></p>
             ) : (
             <MapContainer
                 center={[userLocation.latitude, userLocation.longitude]}
