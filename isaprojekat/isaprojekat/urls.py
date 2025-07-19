@@ -15,7 +15,7 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
-from .views import register_user, create_post, LoginView,get_posts_with_comments, create_comment, user_profile_view, check_user_view, get_username_view, user_nearby_posts
+from .views import register_user, create_post, LoginView,get_posts_with_comments, create_comment, user_profile_view, check_user_view, get_username_view, user_nearby_posts, is_admin, advertise_post
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
 urlpatterns = [
@@ -30,4 +30,6 @@ urlpatterns = [
     path('api/check_user/<str:username>/', check_user_view, name='check-user'),
     path('api/get_username/', get_username_view, name='get_username'),
     path('api/user_nearby_posts/', user_nearby_posts, name='user_nearby_posts'),
+    path('api/check_admin/', is_admin, name='is_admin'),
+    path('api/posts/<int:post_id>/advertise/', advertise_post, name='advertise_post'),
 ]

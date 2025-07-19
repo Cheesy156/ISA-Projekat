@@ -36,10 +36,14 @@ class Post(models.Model):
     longitude = models.DecimalField(max_digits=24, decimal_places=20, blank=True, null=True) 
     time_posted = models.DateTimeField(default=timezone.now)  # Auto-filled with current time
     picture = models.TextField(blank=True, null=True)  # Store image as base64 or URL
+    advertised_at = models.DateTimeField(null=True, blank=True)
     user = models.ForeignKey(MyUser, on_delete=models.CASCADE, related_name="posts")
 
     def __str__(self):
         return self.text
+    
+    def is_advertised(self):
+        return self.advertised_at is not None
 
 class Comment(models.Model):
     text = models.TextField()

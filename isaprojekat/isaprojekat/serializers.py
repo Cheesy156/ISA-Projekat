@@ -134,7 +134,7 @@ class PostCommentSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Post
-        fields = ['id', 'text', 'latitude', 'longitude', 'time_posted', 'picture', 'user_id', 'likes_count', 'username', 'comments']
+        fields = ['id', 'text', 'latitude', 'longitude', 'time_posted', 'picture', 'advertised_at', 'user_id', 'likes_count', 'username', 'comments']
 
     def get_comments(self, obj):
         # Get only top-level comments for the post

@@ -1,22 +1,20 @@
 import pika
 import json
 
-def send_ad_post_to_agencies(post):
-    connection = pika.BlockingConnection(pika.ConnectionParameters('rabbitmq'))  # zameni ako koristiš docker-compose mrežu
+def send_post_to_agencies(post):
+    credentials = pika.PlainCredentials('user', 'password')
+    connection = pika.BlockingConnection(pika.ConnectionParameters(
+        host='localhost',
+        credentials=credentials
+    ))
     channel = connection.channel()
 
-    channel.exchange_declare(exchange='ad_agency_exchange', exchange_type='fanout')
-
-    message = {
+    channel.exchange_declare(exchange='advertise', exchange_type='fanout')
+    message = json.dumps({
         'description': post.text,
         'time_posted': post.time_posted.isoformat(),
-        'username': post.user.username
-    }
+        'username': post.user.username,
+    })
 
-    channel.basic_publish(
-        exchange='ad_agency_exchange',
-        routing_key='',
-        body=json.dumps(message)
-    )
-
+    channel.basic_publish(exchange='advertise', routing_key='', body=message)
     connection.close()

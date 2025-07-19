@@ -6,13 +6,15 @@ import L from 'leaflet';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import { Link } from 'react-router-dom';
 import Nav from "../components/Nav";
+import { Toaster } from 'react-hot-toast';
+ import toast from 'react-hot-toast';
 
 const PostPages = () => {
     const [selectedPost, setSelectedPost] = useState(null);
-    const isAuth = localStorage.getItem('authToken');;
+    const isAuth = localStorage.getItem('authToken');
     const [posts, setPosts] = useState([]);
     const [loading, setLoading] = useState(true);
-    
+    const [isAdmin, setIsAdmin] = useState(false);
 
     useEffect(() => {
         api.get('/posts/')
@@ -25,6 +27,9 @@ const PostPages = () => {
                 console.error("Error fetching posts:", error);
                 setLoading(false);
             });
+        api.get('/check_admin/')
+        .then((res) => setIsAdmin(res.data.is_admin))
+        .catch((err) => console.error("Error checking admin:", err));
     }, []);
 
     const defaultIcon = L.icon({
@@ -49,6 +54,20 @@ const PostPages = () => {
             const bTotal = getTotalLikesAndReplies(b);
             return bTotal - aTotal;  // Sort in descending order
         });
+    };
+
+    const promotePost = async (postId) => {
+        try {
+            await api.post(`/posts/${postId}/advertise/`);
+            const updatedPosts = posts.map(post =>
+                post.id === postId ? { ...post, ad_promoted_at: new Date().toISOString() } : post
+            );
+            setPosts(updatedPosts);
+            toast.success('Post promoted to ad agencies!');
+        } catch (error) {
+            console.error("Error promoting post:", error);
+            toast.error('Failed to promote post.');
+        }
     };
     
 
@@ -98,6 +117,10 @@ const PostPages = () => {
 
     return (
         <>
+        <Toaster
+            position="top-center"
+            reverseOrder={true}
+        />
         <Nav/>
         <div>
             <h1 className="title">Post Page</h1>
@@ -151,7 +174,26 @@ const PostPages = () => {
                                     >
                                         <i className="fas fa-ellipsis-h"></i> Show More
                                     </button>
+
+                                    {isAdmin && (
+                                        <button
+                                            className="promote-button"
+                                            onClick={() => promotePost(post.id)}
+                                        >
+                                            Promote
+                                        </button>
+                                    )}
                                 </div>
+                                {post.advertised_at && (
+                                        <p style={{ fontStyle: 'italic', fontSize: '0.9rem', color: 'green' }}>
+                                            Promoted on {new Date(post.advertised_at).toLocaleString()}
+                                        </p>
+                                    )}
+                                {!post.advertised_at && (
+                                    <p style={{ fontStyle: 'italic', fontSize: '0.9rem', color: 'green' }}>
+                                            Not promoted yet
+                                    </p>
+                                )}
                             </div>
                         </div>
                 ))}

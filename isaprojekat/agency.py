@@ -1,26 +1,38 @@
 import pika
-import json
+import sys, os
 
-def callback(ch, method, properties, body):
-    message = json.loads(body)
-    print("\n Reklamna poruka:")
-    print(f"Opis: {message['description']}")
-    print(f"Vreme: {message['time_posted']}")
-    print(f"Korisnik: {message['username']}")
+def main(agency_name):
+    credentials = pika.PlainCredentials('user', 'password')
+    connection = pika.BlockingConnection(pika.ConnectionParameters(
+        host='localhost',
+        credentials=credentials
+    ))
+    channel = connection.channel()
 
-connection = pika.BlockingConnection(pika.ConnectionParameters('localhost'))
-channel = connection.channel()
+    channel.exchange_declare(exchange='advertise', exchange_type='fanout')
 
-# Poveži se na isti exchange
-channel.exchange_declare(exchange='ad_posts', exchange_type='fanout')
+    result = channel.queue_declare(queue='', exclusive=True)
+    queue_name = result.method.queue
 
-# Kreiraj privremeni red (automatski se briše kada se agencija ugasi)
-result = channel.queue_declare('', exclusive=True)
-queue_name = result.method.queue
+    # Bind the queue to the fanout exchange
+    channel.queue_bind(exchange='advertise', queue=queue_name)
 
-# Poveži red na exchange
-channel.queue_bind(exchange='ad_posts', queue=queue_name)
+    print(f"[{agency_name}] Waiting for messages.")
 
-print(' [*] Čeka poruke. Pritisni CTRL+C za izlaz.')
-channel.basic_consume(queue=queue_name, on_message_callback=callback, auto_ack=True)
-channel.start_consuming()
+    def callback(ch, method, properties, body):
+        print(f"[{agency_name}] Received: {body.decode()}")
+
+    channel.basic_consume(queue=queue_name, on_message_callback=callback, auto_ack=True)
+
+    channel.start_consuming()
+
+if __name__ == '__main__':
+    agency_name = sys.argv[1] if len(sys.argv) > 1 else 'Agency'
+    try:
+        main(agency_name)
+    except KeyboardInterrupt:
+        print("Interrupted")
+        try:
+            sys.exit(0)
+        except SystemExit:
+            os._exit(0)

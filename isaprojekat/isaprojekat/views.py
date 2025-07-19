@@ -25,6 +25,8 @@ from .utils import geocode_address, haversine
 from django.views.decorators.http import require_POST
 from django.http import JsonResponse
 from .utils import rate_limiter
+from django.utils import timezone
+from .rabbit_utils import send_post_to_agencies
 
 
 @api_view(['POST'])
@@ -369,3 +371,81 @@ def get_username_view(request):
         return Response({"message": "User not found."}, status=status.HTTP_404_NOT_FOUND)
 
     return Response({'username': logged_in_user.username})
+
+@api_view(['POST'])
+def advertise_post(request, post_id):
+    # Verify and decode the JWT token
+    token = request.headers.get('Authorization')
+    if not token or not token.startswith("Bearer "):
+        return Response(
+            {"error": "Bearer token missing or incorrectly formatted"},
+            status=status.HTTP_401_UNAUTHORIZED
+        )
+    
+    try:
+        token = token.split()[1]  # Extract the actual token after 'Bearer'
+        decoded_data = jwt.decode(token, settings.SECRET_KEY, algorithms=['HS256'])
+        user_id = decoded_data.get('user_id')
+
+        if not user_id:
+            return Response(
+                {"error": "Invalid token: user ID not found"},
+                status=status.HTTP_401_UNAUTHORIZED
+            )
+
+    except jwt.ExpiredSignatureError:
+        return Response(
+            {"error": "Token has expired"},
+            status=status.HTTP_401_UNAUTHORIZED
+        )
+    except jwt.InvalidTokenError:
+        return Response(
+            {"error": "Invalid token"},
+            status=status.HTTP_401_UNAUTHORIZED
+        )
+
+    try:
+        user = MyUser.objects.get(id=user_id)
+        if user.role != 'admin':
+            return Response({"error": "User is not authorized to advertise posts"}, status=status.HTTP_403_FORBIDDEN)
+    except MyUser.DoesNotExist:
+        return Response({"error": "User not found"}, status=status.HTTP_404_NOT_FOUND)
+    
+    try:
+        post = Post.objects.get(id=post_id)
+
+        post.advertised_at = timezone.now()
+        post.save()
+
+        send_post_to_agencies(post)
+        return Response({"detail": "Post sent to ad agencies."}, status=status.HTTP_200_OK)
+
+    except Post.DoesNotExist:
+        return Response({"detail": "Post not found."}, status=status.HTTP_404_NOT_FOUND)
+    
+
+@api_view(['GET'])
+def is_admin(request):
+    token = request.headers.get('Authorization')
+
+    if not token or not token.startswith("Bearer "):
+        return Response({"is_admin": False}, status=status.HTTP_401_UNAUTHORIZED)
+
+    try:
+        token = token.split()[1]  # Extract token string
+        decoded = jwt.decode(token, settings.SECRET_KEY, algorithms=['HS256'])
+        user_id = decoded.get('user_id')
+
+        if not user_id:
+            return Response({"is_admin": False}, status=status.HTTP_401_UNAUTHORIZED)
+
+        user = MyUser.objects.filter(id=user_id).first()
+        if user and user.role == 'admin':
+            return Response({"is_admin": True})
+
+        return Response({"is_admin": False})
+
+    except jwt.ExpiredSignatureError:
+        return Response({"is_admin": False}, status=status.HTTP_401_UNAUTHORIZED)
+    except jwt.InvalidTokenError:
+        return Response({"is_admin": False}, status=status.HTTP_401_UNAUTHORIZED)
